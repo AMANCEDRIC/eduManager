@@ -94,16 +94,35 @@ export class RegisterComponent {
   constructor(private auth: AuthService, private router: Router, private toast: ToastService) {}
 
   register() {
-    if (this.email && this.firstName && this.lastName) {
+    if (this.email && this.firstName && this.lastName && this.password) {
       this.isLoading.set(true);
       
-      // Simulate registration delay
-      setTimeout(() => {
-        this.auth.register(this.email, this.firstName, this.lastName);
-        this.toast.success('Compte créé avec succès !');
-        this.isLoading.set(false);
-        this.router.navigate(['/login']);
-      }, 1000);
+      this.auth.register(this.email, this.firstName, this.lastName, this.password).subscribe({
+        next: (response) => {
+          if (response.status === 201 || response.status === 200) {
+            this.toast.success('Compte créé avec succès !');
+            // Auto-login after register by executing login
+            this.auth.login(this.email, this.password).subscribe({
+              next: () => {
+                this.isLoading.set(false);
+                this.router.navigate(['/dashboard']);
+              },
+              error: () => {
+                this.isLoading.set(false);
+                this.router.navigate(['/login']);
+              }
+            });
+          } else {
+            this.toast.error(response.message || 'Erreur lors de la création');
+            this.isLoading.set(false);
+          }
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Erreur de connexion au serveur.');
+          this.isLoading.set(false);
+        }
+      });
     } else {
       this.toast.warning('Veuillez remplir tous les champs obligatoires.');
     }

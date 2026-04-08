@@ -1,10 +1,11 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { SchoolDataService } from '../../services/school-data.service';
-import { Student } from '../../models/models';
+import { StudentService, StudentResponse, StudentCreate } from '../../services/student.service';
+import { ClassroomService, ClassroomResponseDto } from '../../services/classroom.service';
 import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-student-manager',
@@ -13,41 +14,70 @@ import { ConfirmDialogComponent } from '../shared/confirm-dialog.component';
   templateUrl: './student-manager.component.html',
   styleUrl: './student-manager.component.scss'
 })
-export class StudentManagerComponent {
+export class StudentManagerComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  dataService = inject(SchoolDataService);
+  private studentService = inject(StudentService);
+  private classroomService = inject(ClassroomService);
+  private toast = inject(ToastService);
 
-  classId = this.route.snapshot.paramMap.get('id') || '';
-  classroom = computed(() => this.dataService.classes().find(c => c.id === this.classId));
-  establishment = computed(() => {
-    const cls = this.classroom();
-    return cls ? this.dataService.establishments().find(e => e.id === cls.establishmentId) : null;
-  });
-
-  students = computed(() => this.dataService.students().filter(s => s.classId === this.classId));
+  classId = Number(this.route.snapshot.paramMap.get('id') || '0');
+  
+  classroom = signal<ClassroomResponseDto | null>(null);
+  students = signal<StudentResponse[]>([]);
 
   showForm = signal(false);
-  editingId = signal<string | null>(null);
+  editingId = signal<number | null>(null);
   isLoading = signal(true);
-
-  constructor() {
-    // Simulate data fetch
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 1500);
-  }
 
   // Confirmations
   showDeleteConfirm = signal(false);
-  idToDelete = signal<string | null>(null);
+  idToDelete = signal<number | null>(null);
   showDiscardConfirm = signal(false);
 
   // Form fields
   firstName = '';
   lastName = '';
-  gender: 'M' | 'F' = 'M';
+  email = '';
+  dateOfBirth = '';
+  parentName = '';
+  parentEmail = '';
+  parentPhone = '';
+  gender: 'M' | 'F' = 'M'; // Note: backend might not have gender, storing it for UI logic if needed, but not sent
 
-  toggleForm(student?: Student) {
+  ngOnInit() {
+    this.loadData();
+  }
+
+  loadData() {
+    this.isLoading.set(true);
+    
+    // First fetch classroom to get its details
+    this.classroomService.getById(this.classId).subscribe({
+      next: (cls) => {
+        this.classroom.set(cls);
+        this.fetchStudents();
+      },
+      error: () => {
+        this.toast.error('Erreur lors du chargement de la classe');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  fetchStudents() {
+    this.studentService.getByClassroom(this.classId).subscribe({
+      next: (data) => {
+        this.students.set(data);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.toast.error('Erreur lors du chargement des élèves');
+        this.isLoading.set(false);
+      }
+    });
+  }
+
+  toggleForm(student?: StudentResponse) {
     if (this.showForm() && (this.firstName.trim() !== '' || this.lastName.trim() !== '') && !student) {
         this.showDiscardConfirm.set(true);
         return;
@@ -57,37 +87,91 @@ export class StudentManagerComponent {
       this.editingId.set(student.id);
       this.firstName = student.firstName;
       this.lastName = student.lastName;
-      this.gender = student.gender || 'M';
+      this.email = student.email || '';
+      this.dateOfBirth = student.dateOfBirth || '';
+      this.parentName = student.parentName || '';
+      this.parentEmail = student.parentEmail || '';
+      this.parentPhone = student.parentPhone || '';
     } else {
       this.editingId.set(null);
       this.firstName = '';
       this.lastName = '';
+      this.email = '';
+      this.dateOfBirth = '';
+      this.parentName = '';
+      this.parentEmail = '';
+      this.parentPhone = '';
       this.gender = 'M';
     }
     this.showForm.set(!this.showForm());
   }
 
   save() {
-    if (!this.firstName.trim() || !this.lastName.trim()) return;
+    if (!this.firstName.trim() || !this.lastName.trim()) {
+      this.toast.warning('Veuillez renseigner le prénom et le nom');
+      return;
+    }
+
+    this.isLoading.set(true);
+
+    const payload: StudentCreate = {
+      firstName: this.firstName,
+      lastName: this.lastName,
+      email: this.email || undefined,
+      dateOfBirth: this.dateOfBirth || undefined,
+      parentName: this.parentName || undefined,
+      parentEmail: this.parentEmail || undefined,
+      parentPhone: this.parentPhone || undefined,
+      classroomId: this.classId
+    };
 
     if (this.editingId()) {
-      this.dataService.updateStudent(this.editingId()!, this.firstName, this.lastName, this.gender);
+      this.studentService.update(this.editingId()!, payload).subscribe({
+        next: (res) => {
+          this.toast.success('Élève mis à jour');
+          this.fetchStudents();
+          this.showForm.set(false);
+        },
+        error: () => {
+          this.toast.error('Erreur lors de la mise à jour');
+          this.isLoading.set(false);
+        }
+      });
     } else {
-      this.dataService.addStudent(this.classId, this.firstName, this.lastName, this.gender);
+      this.studentService.create(payload).subscribe({
+        next: (res) => {
+          this.toast.success('Élève ajouté avec succès');
+          this.fetchStudents();
+          this.showForm.set(false);
+        },
+        error: () => {
+          this.toast.error('Erreur lors de l\'ajout');
+          this.isLoading.set(false);
+        }
+      });
     }
-    this.showForm.set(false);
   }
 
-  confirmDelete(id: string) {
+  confirmDelete(id: number) {
     this.idToDelete.set(id);
     this.showDeleteConfirm.set(true);
   }
 
   delete() {
     if (this.idToDelete()) {
-      this.dataService.deleteStudent(this.idToDelete()!);
-      this.showDeleteConfirm.set(false);
-      this.idToDelete.set(null);
+      this.isLoading.set(true);
+      this.studentService.delete(this.idToDelete()!).subscribe({
+        next: () => {
+          this.toast.success('Élève supprimé');
+          this.fetchStudents();
+          this.showDeleteConfirm.set(false);
+          this.idToDelete.set(null);
+        },
+        error: () => {
+          this.toast.error('Erreur lors de la suppression');
+          this.isLoading.set(false);
+        }
+      });
     }
   }
 
@@ -119,30 +203,42 @@ export class StudentManagerComponent {
 
   private parseCSV(text: string) {
     const lines = text.split(/\r?\n/);
-    const studentsData: { firstName: string, lastName: string, gender: 'M' | 'F' }[] = [];
+    let successfullyParsed = 0;
+    
+    // We can't import asynchronously with a simple loop reliably without combining observables
+    // Here we will do sequential or parallel requests using RxJS, but for simplicity, we mock alert for now or implement parallel creation
+    // Best practice for bulk import is a backend bulk endpoint. Let's just create sequentially logic for demo.
+    
+    if (lines.length > 0) {
+      this.toast.info('Début de l\'importation en masse...');
+    }
 
-    for (const line of lines) {
-      if (!line.trim()) continue;
+    lines.forEach(line => {
+      if (!line.trim()) return;
       
       const parts = line.includes(';') ? line.split(';') : line.split(',');
       if (parts.length >= 2) {
         const firstName = parts[0].trim();
         const lastName = parts[1].trim();
-        let gender: 'M' | 'F' = 'M';
-        
-        if (parts[2]) {
-          const g = parts[2].trim().toUpperCase();
-          if (g === 'F' || g === 'FILLE') gender = 'F';
-        }
+        let email = parts[2] ? parts[2].trim() : undefined;
 
         if (firstName && lastName) {
-          studentsData.push({ firstName, lastName, gender });
+          const payload: StudentCreate = {
+            firstName,
+            lastName,
+            email,
+            classroomId: this.classId
+          };
+          this.studentService.create(payload).subscribe({
+            next: () => successfullyParsed++,
+            complete: () => {
+               // When last one finishes maybe fetch students.
+               this.fetchStudents();
+            }
+          });
         }
       }
-    }
-
-    if (studentsData.length > 0) {
-      this.dataService.importStudents(this.classId, studentsData);
-    }
+    });
   }
 }
+

@@ -36,6 +36,12 @@
           </div>
           
           <div class="flex flex-col gap-1.5">
+            <label class="label-sm text-[10px]">Niveau d'étude</label>
+            <input type="text" [(ngModel)]="level" placeholder="6ème, 5ème..." 
+              class="input-premium py-2.5 font-inter text-[14px]">
+          </div>
+
+          <div class="flex flex-col gap-1.5">
             <label class="label-sm text-[10px]">Discipline de référence</label>
             <input type="text" [(ngModel)]="subject" placeholder="Mathématiques, Lettres..." 
               class="input-premium py-2.5 font-inter text-[14px]">
@@ -81,7 +87,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
             </div>
             <span class="label-sm px-2 py-0.5 bg-primary/5 text-primary rounded font-extrabold text-[9px] tracking-widest ring-1 ring-primary/10">
-              {{ cls.subject | uppercase }}
+              {{ cls.level | uppercase }}
             </span>
           </div>
 
@@ -94,7 +100,7 @@
             <button class="w-8 h-8 rounded-md flex items-center justify-center text-on-surface-variant/40 hover:text-primary hover:bg-primary/5 soft-transition" (click)="toggleForm(cls)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
             </button>
-            <button class="w-8 h-8 rounded-md flex items-center justify-center text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 soft-transition" (click)="confirmDelete(cls.id)">
+            <button class="w-8 h-8 rounded-md flex items-center justify-center text-on-surface-variant/40 hover:text-red-500 hover:bg-red-50 soft-transition" (click)="confirmDelete(cls.id!)">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
             </button>
           </div>
