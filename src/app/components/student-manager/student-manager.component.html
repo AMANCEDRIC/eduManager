@@ -1,0 +1,218 @@
+<div class="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-700 p-6 lg:p-10">
+  <!-- Breadcrumb (Refined) -->
+  <div class="flex items-center gap-3 label-sm text-on-surface-variant/40 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide text-[10px]">
+    <a routerLink="/establishments" class="hover:text-primary soft-transition flex-shrink-0">Établissements</a>
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-20"><path d="m9 18 6-6-6-6"/></svg>
+    <a [routerLink]="['/establishment', establishment()?.id]" class="hover:text-primary soft-transition flex-shrink-0">{{ establishment()?.name }}</a>
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-20"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-on-surface flex-shrink-0">{{ classroom()?.name }}</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-20"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-on-surface-variant/40 flex-shrink-0">Étudiants</span>
+  </div>
+
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="display-md text-on-surface">Registre des Élèves</h1>
+      <p class="body-md text-on-surface-variant/40 mt-1 pb-4">Gestion de la section <span class="font-bold text-on-surface-variant/60">{{ classroom()?.name }}</span>.</p>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-2">
+      <input type="file" id="csvImport" hidden (change)="onFileSelected($event)" accept=".csv">
+      
+      <div class="flex items-center bg-surface-container-low p-1 rounded-xl shadow-inner gap-0.5">
+        <button class="btn-premium btn-premium-secondary bg-transparent hover:bg-surface-lowest text-[10px] px-3 py-1.5 border-none shadow-none uppercase tracking-widest" (click)="triggerImport()">
+          Importer
+        </button>
+        <div class="w-px h-4 bg-on-surface-variant/10"></div>
+        <button class="btn-premium btn-premium-secondary bg-transparent hover:bg-surface-lowest text-[10px] px-3 py-1.5 border-none shadow-none uppercase tracking-widest" [routerLink]="['/attendance', classId]">
+          Appel
+        </button>
+        <button class="btn-premium btn-premium-secondary bg-transparent hover:bg-surface-lowest text-[10px] px-3 py-1.5 border-none shadow-none uppercase tracking-widest" [routerLink]="['/gradebook', classId]">
+          Notes
+        </button>
+      </div>
+
+      <button class="btn-premium btn-premium-primary gap-2 shadow-lg px-6" (click)="toggleForm()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="16" x2="22" y1="11" y2="11"/></svg>
+        <span class="tracking-tight text-[12px]">Nouvel Élève</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Form Modal (Refined) -->
+  @if (showForm()) {
+    <div class="fixed inset-0 bg-on-surface/20 backdrop-blur-md z-[1000] flex items-center justify-center p-6" (click)="$event.target === $event.currentTarget && showForm.set(false)">
+      <div class="glass-card w-full max-w-[460px] p-8 lg:p-10 animate-in zoom-in-95 duration-500 shadow-2xl">
+        <div class="mb-8">
+          <h2 class="headline-sm text-on-surface">{{ editingId() ? 'Éditer la fiche' : 'Nouvelle inscription' }}</h2>
+          <p class="text-[12px] text-on-surface-variant/40 mt-1 font-inter">Veuillez renseigner l'identité académique.</p>
+        </div>
+        
+        <div class="space-y-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="label-sm text-[10px]">Prénom</label>
+              <input type="text" [(ngModel)]="firstName" placeholder="Prénom..." 
+                class="input-premium py-2.5 font-inter text-[14px]">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="label-sm text-[10px]">Nom</label>
+              <input type="text" [(ngModel)]="lastName" placeholder="Nom..." 
+                class="input-premium py-2.5 font-inter text-[14px]">
+            </div>
+          </div>
+          
+          <div class="flex flex-col gap-2">
+            <label class="label-sm text-[10px]">Genre</label>
+            <div class="flex bg-surface-container-low p-1 rounded-xl shadow-inner gap-0.5">
+              <button 
+                type="button"
+                [class]="'flex-1 py-1.5 rounded-lg headline-xs text-[10px] uppercase tracking-widest soft-transition ' + (gender === 'M' ? 'bg-on-surface text-white shadow-lg' : 'text-on-surface-variant/40 hover:text-on-surface hover:bg-surface-lowest')" 
+                (click)="gender = 'M'">Garçon</button>
+              <button 
+                type="button"
+                [class]="'flex-1 py-1.5 rounded-lg headline-xs text-[10px] uppercase tracking-widest soft-transition ' + (gender === 'F' ? 'bg-on-surface text-white shadow-lg' : 'text-on-surface-variant/40 hover:text-on-surface hover:bg-surface-lowest')" 
+                (click)="gender = 'F'">Fille</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-10 border-t border-surface-low pt-6">
+          <button class="px-5 py-2 rounded-md headline-xs text-[10px] tracking-widest uppercase text-on-surface-variant/60 hover:text-on-surface hover:bg-surface-low soft-transition" (click)="showForm.set(false)">Annuler</button>
+          <button class="btn-premium btn-premium-primary px-6" (click)="save()">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Desktop Table (Refined) -->
+  <div class="hidden md:block glass-card shadow-xl shadow-on-surface/5 border-none p-0 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-container-low border-b border-surface-low">
+            <th class="px-6 py-4 label-sm text-on-surface-variant/40 tracking-[0.1em] text-[10px]">Curateur Étudiant</th>
+            <th class="px-6 py-4 label-sm text-on-surface-variant/40 tracking-[0.1em] text-[10px] text-center">Genre</th>
+            <th class="px-6 py-4 label-sm text-on-surface-variant/40 tracking-[0.1em] text-[10px] text-center">Moyenne Annuelle</th>
+            <th class="px-6 py-4 label-sm text-on-surface-variant/40 tracking-[0.1em] text-[10px] text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-low">
+          @if (isLoading()) {
+            @for (i of [1,2,3,4,5]; track i) {
+              <tr>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-4">
+                    <div class="w-9 h-9 skeleton rounded-xl"></div>
+                    <div class="w-32 h-4 skeleton"></div>
+                  </div>
+                </td>
+                <td class="px-6 py-4"><div class="mx-auto w-16 h-4 skeleton"></div></td>
+                <td class="px-6 py-4"><div class="mx-auto w-10 h-5 skeleton"></div></td>
+                <td class="px-6 py-4 text-right"><div class="ml-auto w-16 h-8 skeleton"></div></td>
+              </tr>
+            }
+          } @else {
+            @for (student of students(); track student.id) {
+              <tr class="hover:bg-surface-container-low/30 soft-transition group">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-4">
+                    <div [class]="'w-9 h-9 rounded-xl flex items-center justify-center font-manrope font-extrabold text-[10px] shadow-sm soft-transition group-hover:scale-105 ' + (student.gender === 'F' ? 'bg-pink-100 text-pink-600' : 'bg-primary-fixed-dim/20 text-primary')">
+                      {{ student.firstName[0] }}{{ student.lastName[0] }}
+                    </div>
+                    <div>
+                      <span class="font-manrope font-bold text-[14px] text-on-surface">{{ student.firstName }} {{ student.lastName }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <span [class]="'label-sm px-2 py-0.5 rounded-md font-extrabold text-[9px] ring-1 ring-inset ' + (student.gender === 'F' ? 'bg-pink-50 text-pink-600 ring-pink-100' : 'bg-primary-fixed-dim/10 text-primary ring-primary/10')">
+                    {{ student.gender === 'F' ? 'FILLE' : 'GARÇON' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-center">
+                  <div class="inline-flex flex-col items-center">
+                    <span class="font-manrope font-extrabold text-[15px]" [class.text-primary]="(dataService.getStudentAnnualAverage(student.id) || 0) >= 10" [class.text-red-500]="(dataService.getStudentAnnualAverage(student.id) || 0) < 10">
+                      {{ dataService.getStudentAnnualAverage(student.id)?.toFixed(2) || '--' }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex justify-end gap-1.5 soft-transition translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100">
+                    <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant/40 hover:text-primary hover:bg-primary/5 flex items-center justify-center soft-transition" (click)="toggleForm(student)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </button>
+                    <button class="w-8 h-8 rounded-lg bg-red-50 text-red-500/40 hover:text-red-500 hover:bg-red-50 flex items-center justify-center soft-transition" (click)="confirmDelete(student.id)">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" class="px-6 py-20 text-center">
+                  <p class="label-sm text-on-surface-variant/20 tracking-[0.2em] text-[10px] uppercase">Table Rase</p>
+                  <p class="body-md text-[13px] text-on-surface-variant/10 mt-1">Aucun élève répertorié.</p>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Mobile Cards View (Refined) -->
+  <div class="md:hidden flex flex-col gap-4">
+    @for (student of students(); track student.id) {
+      <div class="glass-card p-6 flex flex-col gap-4 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10"></div>
+        
+        <div class="flex items-center gap-4 relative z-10">
+          <div [class]="'w-11 h-11 rounded-xl flex items-center justify-center font-manrope font-extrabold text-[11px] shadow-sm ' + (student.gender === 'F' ? 'bg-pink-100 text-pink-600' : 'bg-primary-fixed-dim/20 text-primary')">
+            {{ student.firstName[0] }}{{ student.lastName[0] }}
+          </div>
+          <div>
+            <h3 class="font-manrope font-bold text-[14px] text-on-surface">{{ student.firstName }} {{ student.lastName }}</h3>
+            <span [class]="'label-sm text-[8px] uppercase tracking-widest mt-0.5 inline-block ' + (student.gender === 'F' ? 'text-pink-500' : 'text-primary')">
+              {{ student.gender === 'F' ? 'Étudiante' : 'Étudiant' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t border-surface-low relative z-10">
+          <div class="flex flex-col">
+            <span class="label-sm text-on-surface-variant/40 tracking-widest text-[9px]">MOYENNE</span>
+            <span class="font-manrope font-extrabold text-xl mt-0.5" [class.text-primary]="(dataService.getStudentAnnualAverage(student.id) || 0) >= 10" [class.text-red-500]="(dataService.getStudentAnnualAverage(student.id) || 0) < 10">
+              {{ dataService.getStudentAnnualAverage(student.id)?.toFixed(2) || '--' }} <span class="text-[10px] text-on-surface-variant/20">/ 20</span>
+            </span>
+          </div>
+          <div class="flex gap-1.5">
+            <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface-variant/40 flex items-center justify-center" (click)="toggleForm(student)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+            </button>
+            <button class="w-8 h-8 rounded-lg bg-red-50 text-red-500/40 flex items-center justify-center" (click)="confirmDelete(student.id)">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="py-20 glass-card border-dashed border-2 border-surface-high flex flex-col items-center justify-center text-on-surface-variant/20 gap-3">
+        <p class="label-sm tracking-[0.1em] text-[10px] uppercase">Répertoire Vide</p>
+      </div>
+    }
+  </div>
+
+  <!-- Dialogs -->
+  @if (showDeleteConfirm()) {
+    <app-confirm-dialog
+      title="Radiation"
+      message="Action irréversible. Toutes les données seront effacées."
+      confirmLabel="Confirmer"
+      [isDanger]="true"
+      (onConfirm)="delete()"
+      (onCancel)="showDeleteConfirm.set(false)">
+    </app-confirm-dialog>
+  }
+</div>

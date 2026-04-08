@@ -1,0 +1,242 @@
+import { Component, inject, computed, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { SchoolDataService } from '../../services/school-data.service';
+import { AuthService } from '../../services/auth.service';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-2 duration-700 p-6 lg:p-10">
+      <!-- Header Section -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="display-md text-on-surface">Bonjour, {{ auth.currentUser()?.firstName || 'Professeur' }}</h1>
+          <p class="body-md text-on-surface-variant/60 mt-1">Résumé de votre activité académique.</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn-premium btn-premium-secondary bg-surface-high/50 hover:bg-surface-high soft-transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            Exporter Rapport
+          </button>
+          <button class="btn-premium btn-premium-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Nouvel Élève
+          </button>
+        </div>
+      </div>
+
+      @if (isLoading()) {
+        <!-- Stats Grid Skeleton -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          @for (i of [1,2,3,4]; track i) {
+            <div class="glass-card p-6 lg:p-8 flex flex-col gap-4">
+              <div class="w-20 h-3 skeleton"></div>
+              <div class="flex items-end gap-2 mt-1">
+                <div class="w-16 h-10 skeleton"></div>
+                <div class="w-12 h-4 skeleton"></div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div class="lg:col-span-2 glass-card p-8 lg:p-10 h-[300px]">
+             <div class="w-48 h-6 skeleton mb-8"></div>
+             <div class="flex-1 flex gap-6 items-end h-[150px]">
+                <div class="flex-1 h-32 skeleton rounded-t-md"></div>
+                <div class="flex-1 h-48 skeleton rounded-t-md"></div>
+                <div class="flex-1 h-40 skeleton rounded-t-md"></div>
+             </div>
+          </div>
+          <div class="glass-card p-8 lg:p-10 h-[300px] flex flex-col gap-6">
+              <div class="w-32 h-6 skeleton"></div>
+              <div class="flex justify-between">
+                <div class="w-20 h-12 skeleton"></div>
+                <div class="w-20 h-12 skeleton"></div>
+              </div>
+              <div class="w-full h-2 skeleton rounded-full"></div>
+          </div>
+        </div>
+      } @else {
+        <!-- Stats Grid (Editorial Layering) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="glass-card p-6 lg:p-8 group overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 soft-transition group-hover:scale-150"></div>
+            <span class="label-sm mb-3 block">Établissements</span>
+            <div class="flex items-end gap-2 mt-1">
+              <div class="display-lg text-on-surface">{{ dataService.establishments().length }}</div>
+              <div class="body-md text-primary font-bold mb-1.5 shadow-primary/10">Institutions</div>
+            </div>
+          </div>
+          
+          <div class="glass-card p-6 lg:p-8 group overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 soft-transition group-hover:scale-150"></div>
+            <span class="label-sm mb-3 block">Classes Actives</span>
+            <div class="flex items-end gap-2 mt-1">
+              <div class="display-lg text-on-surface">{{ dataService.classes().length }}</div>
+              <div class="body-md text-primary font-bold mb-1.5">Sections</div>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 lg:p-8 group overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 soft-transition group-hover:scale-150"></div>
+            <span class="label-sm mb-3 block">Total Élèves</span>
+            <div class="flex items-end gap-2 mt-1">
+              <div class="display-lg text-on-surface">{{ dataService.students().length }}</div>
+              <div class="body-md text-primary font-bold mb-1.5">Inscrits</div>
+            </div>
+          </div>
+
+          <div class="glass-card p-6 lg:p-8 group overflow-hidden relative">
+            <div class="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 soft-transition group-hover:scale-150"></div>
+            <span class="label-sm mb-3 block">Moyenne Générale</span>
+            <div class="flex items-end gap-2 mt-1">
+              <div class="display-lg text-on-surface">{{ globalAverage() || '--' }}</div>
+              <div class="body-md text-primary font-bold mb-1.5">/ 20</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Performance Visualization -->
+          <div class="lg:col-span-2">
+            <div class="glass-card p-8 lg:p-10 h-full flex flex-col">
+              <div class="flex items-center justify-between mb-8">
+                <div>
+                  <h3 class="headline-sm text-on-surface">Progression Académique</h3>
+                  <p class="text-[12px] text-on-surface-variant/40 mt-0.5">Évolution des performances par trimestre</p>
+                </div>
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-primary"></div>
+                    <span class="label-sm normal-case text-on-surface text-[10px]">Actuel</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-surface-high"></div>
+                    <span class="label-sm normal-case text-on-surface-variant text-[10px]">Précédent</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="flex-1 flex items-end justify-between gap-6 px-2 border-b border-surface-low pb-2">
+                <!-- Bar 1 -->
+                <div class="flex-1 flex flex-col items-center group">
+                  <div class="w-full bg-surface-low rounded-t-md h-[40%] soft-transition group-hover:h-[45%] relative">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[9px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 soft-transition">12.5</div>
+                  </div>
+                  <span class="label-sm mt-4 text-[10px]">T1</span>
+                </div>
+                <!-- Bar 2 -->
+                <div class="flex-1 flex flex-col items-center group">
+                  <div class="w-full btn-premium-primary rounded-t-md h-[80%] soft-transition group-hover:h-[85%] relative">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[9px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 soft-transition">16.8</div>
+                  </div>
+                  <span class="label-sm mt-4 text-[10px]">T2</span>
+                </div>
+                <!-- Bar 3 -->
+                <div class="flex-1 flex flex-col items-center group">
+                  <div class="w-full bg-surface-low rounded-t-md h-[55%] soft-transition group-hover:h-[60%] relative">
+                    <div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[9px] font-bold px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 soft-transition">14.2</div>
+                  </div>
+                  <span class="label-sm mt-4 text-[10px]">T3</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Side: Insights & Actions -->
+          <div class="flex flex-col gap-6">
+            <!-- Gender Analytics -->
+            <div class="glass-card p-8 lg:p-10">
+              <h3 class="headline-sm text-on-surface mb-6">Démographie</h3>
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="label-sm normal-case text-on-surface text-[10px]">Garçons</span>
+                    <span class="display-md text-primary mt-0.5">{{ genderStats().boys }}</span>
+                  </div>
+                  <div class="flex flex-col text-right">
+                    <span class="label-sm normal-case text-on-surface text-[10px]">Filles</span>
+                    <span class="display-md text-on-surface-variant mt-0.5">{{ genderStats().girls }}</span>
+                  </div>
+                </div>
+                
+                <div class="h-2 w-full bg-surface-low rounded-full overflow-hidden flex ring-2 ring-surface-low/30">
+                  <div class="h-full btn-premium-primary soft-transition" [style.width.%]="genderStats().boysPercent"></div>
+                </div>
+                
+                <div class="flex justify-between text-[10px] font-manrope font-extrabold text-on-surface-variant/40 uppercase tracking-widest">
+                  <span>{{ genderStats().boysPercent }}% Masc.</span>
+                  <span>{{ genderStats().girlsPercent }}% Fém.</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Editorial Call to Action -->
+            <div class="glass-card p-6 lg:p-8 btn-premium-primary relative overflow-hidden group">
+              <div class="absolute top-0 left-0 w-full h-full bg-black/10 opacity-0 group-hover:opacity-100 soft-transition"></div>
+              <div class="relative z-10 text-center lg:text-left">
+                <h3 class="headline-sm text-white mb-2">Besoin d'aide ?</h3>
+                <p class="body-sm text-white/70 mb-6 leading-snug">Consultez le guide du curateur.</p>
+                <button class="w-full py-3 bg-white text-primary rounded-md font-manrope font-extrabold text-[11px] uppercase tracking-wider hover:bg-surface-lowest soft-transition active:scale-95 shadow-xl shadow-black/10">
+                  Centre d'aide
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  `,
+  styles: [``]
+})
+export class DashboardComponent {
+  dataService = inject(SchoolDataService);
+  auth = inject(AuthService);
+  isLoading = signal(true);
+
+  constructor() {
+    // Simulate data fetch
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 1200);
+  }
+
+  globalAverage = computed(() => {
+    const students = this.dataService.students();
+    if (students.length === 0) return null;
+    
+    let total = 0;
+    let count = 0;
+    
+    students.forEach(s => {
+      const avg = this.dataService.getStudentAnnualAverage(s.id);
+      if (avg !== null) {
+        total += avg;
+        count++;
+      }
+    });
+    
+    return count > 0 ? (total / count).toFixed(2) : '--';
+  });
+
+  genderStats = computed(() => {
+    const students = this.dataService.students();
+    const total = students.length;
+    if (total === 0) return { boys: 0, girls: 0, boysPercent: 0, girlsPercent: 0 };
+    
+    const boys = students.filter(s => s.gender === 'M').length;
+    const girls = total - boys;
+    
+    return {
+      boys,
+      girls,
+      boysPercent: Math.round((boys / total) * 100),
+      girlsPercent: Math.round((girls / total) * 100)
+    };
+  });
+}

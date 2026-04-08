@@ -1,1 +1,168 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Surface Hierarchy (Design System Doc) */
+  --surface: #f7f9fb;           /* Base Layer */
+  --surface-container-low: #f0f4f7;   /* Primary Layout Blocks */
+  --surface-container-lowest: #ffffff;  /* Interactive/Floating Elements */
+  --surface-container-high: #e3e9ed;  /* Deep Content/Recessed Areas */
+
+  --primary: #1554d9;           /* Professional Blue */
+  --primary-container: #d3e4fe;
+  
+  --on-surface: #2c3437;        /* Softer black */
+  --on-surface-variant: #5a6b73;
+  
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+}
+
+body {
+  @apply font-inter bg-surface text-on-surface antialiased min-h-screen text-[14px];
+  margin: 0;
+  padding: 0;
+}
+
+/* Typography Hierarchy (Editorial Voice) */
+h1, h2, h3, h4, .font-display {
+  @apply font-manrope font-extrabold tracking-tight;
+}
+
+.display-lg { @apply text-3xl lg:text-4xl font-manrope font-extrabold leading-tight tracking-tighter; }
+.display-md { @apply text-2xl lg:text-3xl font-manrope font-bold leading-tight; }
+.headline-sm { @apply text-lg lg:text-xl font-manrope font-bold; }
+
+.body-md { @apply text-base font-inter font-normal leading-relaxed; }
+.label-sm { @apply text-[11px] font-inter font-bold uppercase tracking-wider text-on-surface-variant; }
+
+/* Components (Academic Editorial Style) */
+@layer components {
+  /* Tonal Layering replaces Borders */
+  .glass-card {
+    @apply bg-surface-lowest rounded-lg transition-all duration-300;
+    /* Ambient Shadow: 6% opacity, xl blur */
+    box-shadow: 0 1.5rem 1.5rem rgba(44, 52, 55, 0.06);
+  }
+
+  .glass-nav {
+    /* Glassmorphism Rule: 80% opacity, 20px blur */
+    @apply bg-surface/80 backdrop-blur-[20px] transition-all;
+  }
+
+  .btn-premium {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md font-bold transition-all duration-300 active:scale-95 text-[13px];
+  }
+
+  .btn-premium-primary {
+    /* Lithographic Gradient Rule */
+    background: linear-gradient(135deg, #1554d9 0%, #3b76f6 100%);
+    @apply text-white shadow-lg shadow-primary/10;
+  }
+
+  .btn-premium-secondary {
+    @apply bg-secondary-container text-on-surface font-bold;
+  }
+
+  .btn-premium-tertiary {
+    @apply text-primary hover:bg-primary/5 font-bold;
+  }
+
+  /* Form Inputs Rule: Sheet of Paper feel */
+  .input-premium {
+    @apply w-full px-4 py-2.5 rounded-md bg-surface-low border-b-2 border-transparent outline-none transition-all duration-300 text-sm;
+    @apply focus:bg-white focus:border-primary placeholder:text-on-surface-variant/50;
+  }
+
+  /* Clarity Grid (Tables) */
+  .clarity-grid-header {
+    @apply label-sm pb-4 border-none;
+  }
+
+  .clarity-grid-row {
+    @apply transition-colors duration-200 cursor-pointer;
+    margin-bottom: 0.5rem; /* spacing-2 roughly */
+  }
+
+  .clarity-grid-row:hover {
+    @apply bg-secondary-container/30;
+  }
+
+  .clarity-grid-row.selected {
+    @apply bg-primary-fixed-dim/10 border-l-4 border-primary;
+  }
+}
+
+/* Animations */
+.soft-transition {
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes spinner {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spinner .6s linear infinite;
+}
+
+.spinner-primary {
+  border-color: rgba(21, 84, 217, 0.1);
+  border-top-color: var(--primary);
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-container-low) 25%, var(--surface-container-high) 50%, var(--surface-container-low) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  @apply rounded-md;
+}
+
+// Performance Level Utilities
+.perf-high { color: #10b981; } // emerald-500
+.perf-mid { color: #f59e0b; }  // amber-500
+.perf-low { color: #ef4444; }  // red-500
+
+.bg-perf-high-subtle { background-color: rgba(16, 185, 129, 0.05); }
+.bg-perf-mid-subtle { background-color: rgba(245, 158, 11, 0.05); }
+.bg-perf-low-subtle { background-color: rgba(239, 68, 68, 0.05); }
+
+.sticky-shadow-right {
+  box-shadow: 8px 0 12px -6px rgba(44, 52, 55, 0.12);
+}
+
+.sticky-shadow-left {
+  box-shadow: -8px 0 12px -6px rgba(44, 52, 55, 0.12);
+}
+
+.grade-input-focus {
+  @apply ring-2 ring-primary/20 bg-primary/[0.02] border-primary/30;
+}
+
+/* Utilities for Layout */
+.sidebar-editorial { @apply bg-surface-low w-64 h-screen fixed left-0 top-0 overflow-y-auto soft-transition; }
+.main-editorial { @apply bg-surface ml-64 min-h-screen soft-transition p-6 lg:p-10; }
+
+/* Scrollbar (Editorial) */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-surface-container-high rounded-full hover:bg-on-surface-variant/20;
+}

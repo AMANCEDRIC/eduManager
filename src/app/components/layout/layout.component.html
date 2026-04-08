@@ -1,0 +1,266 @@
+<div class="flex min-h-screen bg-surface selection:bg-primary/10">
+  <!-- Desktop Sidebar -->
+  <aside 
+    [class.w-64]="!isSidebarCollapsed()" 
+    [class.w-20]="isSidebarCollapsed()"
+    class="hidden lg:flex flex-col sticky top-0 h-screen z-50 bg-surface-low soft-transition border-r border-surface-low overflow-hidden">
+
+    <!-- Logo Section -->
+    <div class="px-6 py-6 flex items-center overflow-hidden">
+      <div class="flex items-center gap-2.5 min-w-max">
+        <div class="w-9 h-9 btn-premium-primary flex items-center justify-center text-white rounded-xl flex-shrink-0 shadow-lg shadow-primary/10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+        </div>
+        <span class="text-lg font-manrope font-extrabold tracking-tight text-on-surface soft-transition"
+          [class.opacity-0]="isSidebarCollapsed()" [class.w-0]="isSidebarCollapsed()">EduManager</span>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 space-y-1.5 overflow-hidden">
+      <div class="px-4 pb-1.5 pt-2">
+        <span class="label-sm text-[9px] uppercase tracking-widest text-on-surface-variant/30 font-extrabold" [class.opacity-0]="isSidebarCollapsed()">Principal</span>
+      </div>
+
+      @if (auth.isAdmin()) {
+        <a routerLink="/admin/dashboard" routerLinkActive="!bg-surface-lowest !text-primary shadow-sm ring-1 ring-primary/5"
+          class="flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-on-surface-variant/60 hover:bg-surface-lowest hover:text-on-surface soft-transition group min-w-max">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="soft-transition group-hover:scale-110 flex-shrink-0 text-primary/40 group-hover:text-primary"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-8"/></svg>
+          <span class="font-bold text-[13px] soft-transition" [class.opacity-0]="isSidebarCollapsed()"
+            [class.translate-x-4]="isSidebarCollapsed()">Reporting Admin</span>
+        </a>
+      }
+
+      <a routerLink="/dashboard" routerLinkActive="!bg-surface-lowest !text-primary shadow-sm ring-1 ring-primary/5"
+        class="flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-on-surface-variant/60 hover:bg-surface-lowest hover:text-on-surface soft-transition group min-w-max">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="soft-transition group-hover:scale-110 flex-shrink-0 text-primary/40 group-hover:text-primary">
+          <rect width="7" height="9" x="3" y="3" rx="1" />
+          <rect width="7" height="5" x="14" y="3" rx="1" />
+          <rect width="7" height="9" x="14" y="12" rx="1" />
+          <rect width="7" height="5" x="3" y="16" rx="1" />
+        </svg>
+        <span class="font-bold text-[13px] soft-transition" [class.opacity-0]="isSidebarCollapsed()"
+          [class.translate-x-4]="isSidebarCollapsed()">Tableau de bord</span>
+      </a>
+
+      @if (auth.isAdmin()) {
+      <a routerLink="/admin/users" routerLinkActive="!bg-surface-lowest !text-primary shadow-sm ring-1 ring-primary/5"
+        class="flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-on-surface-variant/60 hover:bg-surface-lowest hover:text-on-surface soft-transition group min-w-max">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="soft-transition group-hover:scale-110 flex-shrink-0 text-primary/40 group-hover:text-primary">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <circle cx="19" cy="11" r="4" />
+        </svg>
+        <span class="font-bold text-[13px] soft-transition" [class.opacity-0]="isSidebarCollapsed()"
+          [class.translate-x-4]="isSidebarCollapsed()">Utilisateurs</span>
+      </a>
+      }
+
+      <a routerLink="/establishments" routerLinkActive="!bg-surface-lowest !text-primary shadow-sm ring-1 ring-primary/5"
+        class="flex items-center gap-3.5 px-3 py-2.5 rounded-xl text-on-surface-variant/60 hover:bg-surface-lowest hover:text-on-surface soft-transition group min-w-max">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+          class="soft-transition group-hover:scale-110 flex-shrink-0 text-primary/40 group-hover:text-primary">
+          <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span class="font-bold text-[13px] soft-transition" [class.opacity-0]="isSidebarCollapsed()"
+          [class.translate-x-4]="isSidebarCollapsed()">Établissements</span>
+      </a>
+    </nav>
+
+    <!-- User Footer -->
+    <div class="p-4 overflow-hidden border-t border-surface-low bg-surface-container-low/20">
+      <div 
+        class="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-surface-container-low/50 group cursor-pointer min-w-max soft-transition" 
+        (click)="logout()">
+        <div class="w-9 h-9 rounded-lg bg-surface-lowest text-primary flex items-center justify-center font-manrope font-extrabold text-[12px] group-hover:bg-red-50 group-hover:text-red-500 transition-all flex-shrink-0 shadow-sm border border-surface-low">
+          {{ auth.currentUser()?.firstName?.[0]?.toUpperCase() || '?' }}
+        </div>
+        <div class="flex flex-col flex-1 truncate soft-transition" [class.opacity-0]="isSidebarCollapsed()"
+          [class.translate-x-4]="isSidebarCollapsed()">
+          <span class="text-[12px] font-manrope font-bold text-on-surface truncate">{{ auth.currentUser()?.firstName || 'Utilisateur' }}</span>
+          <span class="text-[9px] text-on-surface-variant/40 uppercase font-inter font-extrabold tracking-widest group-hover:text-red-500 transition-colors">Déconnexion</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden bg-surface">
+
+    <!-- Top Header -->
+    <header class="h-14 lg:h-16 glass-nav px-6 lg:px-8 flex items-center justify-between z-40 sticky top-0 border-b border-surface-low">
+      <div class="flex items-center gap-4">
+        <!-- Collapse Toggle -->
+        <button (click)="toggleCollapse()"
+          class="hidden lg:flex w-9 h-9 items-center justify-center text-on-surface-variant/40 hover:text-primary hover:bg-surface-lowest rounded-lg soft-transition">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            [style.transform]="isSidebarCollapsed() ? 'rotate(180deg)' : 'none'"
+            class="soft-transition">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+
+        <!-- Search Bar -->
+        <div class="hidden md:flex items-center gap-2.5 bg-surface-low px-3 py-1.5 rounded-xl w-72 group focus-within:bg-white focus-within:shadow-lg focus-within:shadow-on-surface[0.01] soft-transition border border-transparent focus-within:border-primary/10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            class="text-on-surface-variant/20 group-focus-within:text-primary soft-transition">
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input type="text" placeholder="Recherche curateur..."
+            class="bg-transparent border-0 outline-none text-[12px] font-inter font-medium text-on-surface w-full placeholder:text-on-surface-variant/20">
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <button
+          class="lg:hidden w-9 h-9 flex items-center justify-center bg-surface-low rounded-xl text-on-surface-variant/60"
+          (click)="toggleSidebar()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" x2="21" y1="6" y2="6" />
+            <line x1="3" x2="21" y1="12" y2="12" />
+            <line x1="3" x2="21" y1="18" y2="18" />
+          </svg>
+        </button>
+
+        <div class="lg:hidden flex items-center gap-2.5">
+          <div class="w-8 h-8 btn-premium-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+              <path d="M6 12v5c3 3 9 3 12 0v-5" />
+            </svg>
+          </div>
+          <span class="font-manrope font-extrabold text-on-surface tracking-tight text-[15px]">EduManager</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Notifications -->
+        <button class="w-9 h-9 rounded-xl bg-surface-low text-on-surface-variant/40 flex items-center justify-center relative group hover:bg-surface-lowest soft-transition border border-transparent hover:border-primary/5">
+          <div class="absolute top-2.5 right-2.5 w-1.5 h-1.5 bg-primary rounded-full ring-2 ring-white"></div>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"
+            class="group-hover:text-primary soft-transition">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+          </svg>
+        </button>
+
+        <!-- Profile Info -->
+        <div class="flex items-center gap-3 ml-1 px-1 py-1 rounded-full bg-surface-lowest shadow-sm ring-1 ring-surface-low">
+          <div class="hidden sm:flex flex-col text-right pr-1">
+            <span class="text-[12px] font-manrope font-extrabold text-on-surface leading-tight">{{ auth.currentUser()?.firstName || 'Utilisateur' }}</span>
+            <span class="text-[9px] text-primary/60 font-inter font-extrabold uppercase tracking-widest leading-none">Curateur</span>
+          </div>
+          <div class="w-8 h-8 rounded-full btn-premium-primary text-white flex items-center justify-center font-manrope font-extrabold text-[11px] shadow-lg shadow-primary/10 cursor-pointer">
+            {{ auth.currentUser()?.firstName?.[0]?.toUpperCase() || 'U' }}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto scrollbar-hide scroll-smooth">
+      <div class="max-w-[1600px] mx-auto min-h-full pb-24 lg:pb-0">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+
+  <!-- Mobile Bottom Nav (Refined) -->
+  <nav class="lg:hidden fixed bottom-5 left-5 right-5 h-14 bg-surface/80 backdrop-blur-xl z-[100] flex justify-around items-center rounded-2xl shadow-xl border border-surface-low ring-1 ring-on-surface/5">
+    <a routerLink="/dashboard" routerLinkActive="!text-primary !bg-primary/5 shadow-sm"
+      class="flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl text-on-surface-variant/40 soft-transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="7" height="9" x="3" y="3" rx="1" />
+        <rect width="7" height="5" x="14" y="3" rx="1" />
+        <rect width="7" height="9" x="14" y="12" rx="1" />
+        <rect width="7" height="5" x="3" y="16" rx="1" />
+      </svg>
+    </a>
+    @if (auth.isAdmin()) {
+    <a routerLink="/admin/users" routerLinkActive="!text-primary !bg-primary/5 shadow-sm"
+      class="flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl text-on-surface-variant/40 soft-transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <circle cx="19" cy="11" r="4" />
+      </svg>
+    </a>
+    }
+    <a routerLink="/establishments" routerLinkActive="!text-primary !bg-primary/5 shadow-sm"
+      class="flex flex-col items-center gap-1 px-5 py-2.5 rounded-xl text-on-surface-variant/40 soft-transition">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    </a>
+  </nav>
+
+  <!-- Mobile Overlay & Sidebar (Tightened) -->
+  @if (isSidebarOpen()) {
+  <div class="fixed inset-0 bg-on-surface/10 backdrop-blur-sm z-[110] lg:hidden" (click)="toggleSidebar()"></div>
+  <aside
+    class="fixed inset-y-5 left-5 w-64 bg-surface-lowest z-[120] lg:hidden animate-in slide-in-from-left duration-500 ease-out flex flex-col rounded-2xl shadow-2xl border border-surface-low overflow-hidden">
+    <div class="p-6 flex flex-col h-full">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 btn-premium-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+          </svg>
+        </div>
+        <span class="text-[18px] font-manrope font-extrabold tracking-tight text-on-surface">EduManager</span>
+      </div>
+
+      <nav class="mt-8 space-y-2 flex-1">
+        <a routerLink="/dashboard" (click)="toggleSidebar()" routerLinkActive="!bg-primary/5 !text-primary shadow-sm ring-1 ring-primary/5"
+          class="flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-on-surface-variant/60 soft-transition font-bold text-[13px]">
+          Tableau de bord
+        </a>
+        @if (auth.isAdmin()) {
+        <a routerLink="/admin/users" (click)="toggleSidebar()" routerLinkActive="!bg-primary/5 !text-primary shadow-sm ring-1 ring-primary/5"
+          class="flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-on-surface-variant/60 soft-transition font-bold text-[13px]">
+          Utilisateurs (Admin)
+        </a>
+        }
+        <a routerLink="/establishments" (click)="toggleSidebar()" routerLinkActive="!bg-primary/5 !text-primary shadow-sm ring-1 ring-primary/5"
+          class="flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-on-surface-variant/60 soft-transition font-bold text-[13px]">
+          Établissements
+        </a>
+      </nav>
+
+      <div class="pt-6 border-t border-surface-low">
+        <div class="flex items-center gap-3.5 px-2 py-2 rounded-xl bg-red-50/10 hover:bg-red-50/20 soft-transition cursor-pointer" (click)="logout()">
+          <div class="w-9 h-9 rounded-xl bg-red-50 text-red-500 flex items-center justify-center shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[13px] font-bold text-on-surface">Déconnexion</span>
+            <span class="text-[9px] text-on-surface-variant/40 uppercase font-extrabold tracking-wider">Quitter l'espace</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+  }
+</div>

@@ -1,0 +1,270 @@
+<div class="flex flex-col h-full gap-8 animate-in fade-in slide-in-from-bottom-2 duration-700 p-6 lg:p-10">
+  <!-- Breadcrumb (Refined) -->
+  <div class="flex items-center gap-3 label-sm text-on-surface-variant/40 overflow-x-auto whitespace-nowrap pb-2 scrollbar-hide text-[10px]">
+    <a routerLink="/establishments" class="hover:text-primary soft-transition flex-shrink-0">Établissements</a>
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-20"><path d="m9 18 6-6-6-6"/></svg>
+    <a [routerLink]="['/establishment', classroom()?.establishmentId]" class="hover:text-primary soft-transition flex-shrink-0">{{ establishment()?.name }}</a>
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-20"><path d="m9 18 6-6-6-6"/></svg>
+    <a [routerLink]="['/class', classId]" class="hover:text-primary soft-transition flex-shrink-0">{{ classroom()?.name }}</a>
+    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 opacity-20"><path d="m9 18 6-6-6-6"/></svg>
+    <span class="text-on-surface-variant/40 flex-shrink-0">Notes</span>
+  </div>
+
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div>
+      <h1 class="display-md text-on-surface">Journal des Évaluations</h1>
+      <p class="body-md text-on-surface-variant/40 mt-1 pb-4">Suivi des performances - <span class="font-bold text-on-surface-variant/60">{{ classroom()?.name }}</span>.</p>
+    </div>
+    
+    <div class="flex flex-wrap items-center gap-2">
+        <div class="flex bg-surface-container-low p-1 rounded-xl shadow-inner gap-0.5 overflow-x-auto scrollbar-hide max-w-full">
+            @for (p of periods(); track p.id) {
+              <button (click)="selectedPeriodId.set(p.id)" 
+                class="px-4 py-1.5 rounded-lg headline-xs text-[10px] uppercase tracking-widest soft-transition" 
+                [ngClass]="selectedPeriodId() === p.id ? 'bg-on-surface text-white shadow-lg' : 'text-on-surface-variant/40 hover:text-on-surface hover:bg-surface-lowest'">
+                {{ p.name }}
+              </button>
+            }
+        </div>
+        <button class="btn-premium btn-premium-primary gap-2 shadow-lg px-6" (click)="showEvalForm.set(true)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          <span class="tracking-tight text-[12px]">Évaluation</span>
+        </button>
+    </div>
+  </div>
+
+  <!-- New Evaluation Modal (Refined) -->
+  @if (showEvalForm()) {
+    <div class="fixed inset-0 bg-on-surface/20 backdrop-blur-md z-[1000] flex items-center justify-center p-6" (click)="$event.target === $event.currentTarget && showEvalForm.set(false)">
+      <div class="glass-card w-full max-w-[440px] p-8 lg:p-10 animate-in zoom-in-95 duration-500 shadow-2xl">
+        <div class="mb-8">
+          <h2 class="headline-sm text-on-surface">Consigner une évaluation</h2>
+          <p class="text-[12px] text-on-surface-variant/40 mt-1 font-inter">Définissez les paramètres du nouvel examen.</p>
+        </div>
+        <div class="space-y-6">
+          <div class="flex flex-col gap-1.5">
+            <label class="label-sm text-[10px]">Identification de l'examen</label>
+            <input type="text" [(ngModel)]="newEvalName" class="input-premium py-2.5 font-inter text-[14px]" placeholder="Ex: Devoir n°1...">
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="label-sm text-[10px]">Note Maximale</label>
+              <input type="number" [(ngModel)]="newEvalMaxGrade" class="input-premium py-2.5 text-center font-inter text-[14px]">
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="label-sm text-[10px]">Coefficient</label>
+              <input type="number" [(ngModel)]="newEvalCoef" class="input-premium py-2.5 text-center font-inter text-[14px]">
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 mt-10 border-t border-surface-low pt-6">
+          <button class="px-5 py-2 rounded-md headline-xs text-[10px] tracking-widest uppercase text-on-surface-variant/60 hover:text-on-surface hover:bg-surface-low soft-transition" (click)="showEvalForm.set(false)">Annuler</button>
+          <button class="btn-premium btn-premium-primary px-6" (click)="addEvaluation()">Confirmer</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Grid Layout (Responsive Dual-View) -->
+  <div class="flex-1 flex flex-col min-h-0">
+    <!-- Desktop Table View (lg+) -->
+    <div class="hidden lg:flex flex-1 glass-card shadow-xl shadow-on-surface/5 border-none p-0 overflow-hidden flex-col">
+      <div class="overflow-auto flex-1 scrollbar-hide relative group/container">
+        <table class="w-full border-separate border-spacing-0 whitespace-nowrap">
+          <thead class="sticky top-0 z-30">
+            <tr class="bg-surface-container-low">
+              <th class="px-8 py-6 bg-surface-container-low text-left min-w-[280px] label-sm text-on-surface-variant/40 tracking-[0.2em] text-[10px] sticky left-0 z-40 border-b border-surface-low border-r sticky-shadow-right uppercase">
+                 Registre Académique
+              </th>
+              @if (isLoading()) {
+                @for (i of [1,2,3,4]; track i) {
+                  <th class="px-4 py-6 border-b border-surface-low min-w-[120px] bg-surface-container-low text-center">
+                    <div class="mx-auto w-16 h-4 skeleton"></div>
+                  </th>
+                }
+              } @else {
+                @for (eval of evaluations(); track eval.id) {
+                  <th class="px-4 py-6 border-b border-surface-low border-r border-surface-low/30 text-center min-w-[120px] group/head transition-colors hover:bg-surface-container-high/40 bg-surface-container-low">
+                    <div class="flex flex-col items-center gap-1.5">
+                      <span class="font-manrope font-extrabold text-[12px] text-on-surface leading-tight transition-transform group-hover/head:scale-105" [title]="eval.name">{{ eval.name }}</span>
+                      <div class="flex items-center gap-1.5">
+                        <span class="px-1.5 py-0.5 bg-on-surface/5 rounded text-[8px] font-manrope font-extrabold text-on-surface-variant/60">C{{ eval.coefficient }}</span>
+                        <span class="px-1.5 py-0.5 bg-primary/5 rounded text-[8px] font-manrope font-extrabold text-primary border border-primary/10">/{{ eval.maxGrade }}</span>
+                      </div>
+                    </div>
+                  </th>
+                }
+              }
+              <th class="px-8 py-6 bg-primary/5 text-center min-w-[120px] label-sm text-primary tracking-[0.2em] text-[10px] sticky right-0 z-40 border-b border-surface-low border-l border-primary/20 sticky-shadow-left uppercase">
+                 Moyenne
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-surface-low bg-surface-lowest">
+            @if (isLoading()) {
+              @for (row of [1,2,3,4,5,6,7,8]; track row) {
+                <tr>
+                  <td class="px-8 py-5 sticky left-0 bg-white z-20 border-r border-surface-low sticky-shadow-right">
+                    <div class="flex items-center gap-4">
+                      <div class="w-10 h-10 skeleton rounded-xl"></div>
+                      <div class="w-32 h-4 skeleton"></div>
+                    </div>
+                  </td>
+                  @for (col of [1,2,3,4]; track col) {
+                    <td class="p-3 border-r border-surface-low/50"><div class="mx-auto w-12 h-10 skeleton rounded-lg"></div></td>
+                  }
+                  <td class="px-8 py-5 bg-primary/[0.01] sticky right-0 z-20 sticky-shadow-left">
+                    <div class="mx-auto w-12 h-6 skeleton rounded-full"></div>
+                  </td>
+                </tr>
+              }
+            } @else {
+              @for (student of students(); track student.id) {
+                <tr class="hover:bg-surface-container-low/[0.25] soft-transition group/row">
+                  <td class="px-8 py-4.5 border-r border-surface-low sticky left-0 z-20 bg-surface-lowest group-hover/row:bg-surface-lowest transition-colors sticky-shadow-right">
+                    <div class="flex items-center gap-4 transition-transform group-hover/row:translate-x-1">
+                      <div [class]="'w-10 h-10 rounded-xl flex items-center justify-center font-manrope font-extrabold text-[12px] shadow-sm soft-transition ' + (student.gender === 'F' ? 'bg-pink-100/50 text-pink-600 ring-1 ring-pink-200/50' : 'bg-primary/5 text-primary ring-1 ring-primary/10')">
+                        {{ getStudentInitials(student) }}
+                      </div>
+                      <div>
+                        <h4 class="font-manrope font-bold text-[14px] text-on-surface line-clamp-1">{{ student.firstName }} {{ student.lastName }}</h4>
+                        <p class="text-[9px] text-on-surface-variant/30 uppercase tracking-[0.1em] font-extrabold mt-0.5">Élève de Section</p>
+                      </div>
+                    </div>
+                  </td>
+                  @for (eval of evaluations(); track eval.id) {
+                    <td class="p-1 border-r border-surface-low/40 soft-transition group-hover/row:bg-primary/[0.01]">
+                      <div class="relative px-3">
+                        <input type="number" 
+                          [value]="getGrade(student.id, eval.id)"
+                          (input)="validateInput(student.id, eval.id, eval.maxGrade, $event)"
+                          (blur)="updateGrade(student.id, eval.id, $event)"
+                          [class.text-red-500]="cellErrors()[student.id + '_' + eval.id]"
+                          class="w-full bg-transparent text-center font-manrope font-black text-[15px] outline-none border-b border-transparent focus:border-primary/30 py-2.5 transition-all placeholder:text-on-surface-variant/10 text-on-surface hover:bg-on-surface/5 rounded-md focus:bg-white focus:shadow-inner"
+                          placeholder="-">
+                      </div>
+                    </td>
+                  }
+                  <td [class]="'px-8 py-4.5 border-l border-primary/10 text-center sticky right-0 z-20 transition-all duration-500 sticky-shadow-left ' + 
+                    (getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'high' ? 'bg-emerald-50/30 text-emerald-600' : 
+                     getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'mid' ? 'bg-amber-50/30 text-amber-600' : 'bg-red-50/30 text-red-600')">
+                    <div class="flex flex-col items-center gap-0.5">
+                      <span class="font-manrope font-black text-[17px] tracking-tight">
+                        {{ dataService.getStudentAverageForPeriod(student.id, selectedPeriodId())?.toFixed(2) || '--' }}
+                      </span>
+                      <div class="h-1 w-8 rounded-full overflow-hidden bg-white/50">
+                        <div class="h-full soft-transition" [style.width.%]="(dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0) * 5"
+                          [class.bg-emerald-500]="getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'high'"
+                          [class.bg-amber-500]="getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'mid'"
+                          [class.bg-red-500]="getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'low'">
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                    <td colspan="100" class="px-6 py-28 text-center bg-surface-lowest">
+                      <div class="flex flex-col items-center">
+                        <div class="w-16 h-16 bg-surface-container-low rounded-2xl flex items-center justify-center mb-6">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-on-surface-variant/20"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                        </div>
+                        <p class="label-sm text-on-surface-variant/20 tracking-[0.3em] text-[10px] uppercase font-black">Archive des Notes Vide</p>
+                        <p class="body-md text-[13px] text-on-surface-variant/20 mt-2 max-w-[300px] leading-relaxed">Aucune évaluation n'a été consignée pour cette période dans cet établissement.</p>
+                      </div>
+                    </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Mobile Card View (lg-) -->
+    <div class="lg:hidden flex flex-col gap-6">
+      @if (isLoading()) {
+        @for (i of [1,2,3]; track i) {
+          <div class="glass-card p-6 space-y-6">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-12 skeleton rounded-2xl"></div>
+              <div class="flex-1 space-y-2">
+                <div class="w-3/4 h-5 skeleton"></div>
+                <div class="w-1/2 h-3 skeleton"></div>
+              </div>
+            </div>
+            <div class="space-y-4">
+              @for (j of [1,2,3]; track j) {
+                <div class="h-12 skeleton rounded-xl"></div>
+              }
+            </div>
+          </div>
+        }
+      } @else {
+        @for (student of students(); track student.id) {
+          <div class="glass-card overflow-hidden flex flex-col soft-transition hover:shadow-2xl hover:shadow-primary/5 active:scale-[0.99]">
+            <!-- Card Header -->
+            <div class="p-6 pb-4 flex items-center justify-between gap-4 bg-surface-lowest">
+              <div class="flex items-center gap-4">
+                <div [class]="'w-12 h-12 rounded-2xl flex items-center justify-center font-manrope font-extrabold text-[14px] shadow-sm ' + (student.gender === 'F' ? 'bg-pink-100 text-pink-600 ring-1 ring-pink-200' : 'bg-primary/5 text-primary ring-1 ring-primary/10')">
+                  {{ getStudentInitials(student) }}
+                </div>
+                <div>
+                  <h4 class="font-manrope font-bold text-[16px] text-on-surface leading-tight">{{ student.firstName }} {{ student.lastName }}</h4>
+                  <p class="text-[10px] text-on-surface-variant/40 uppercase tracking-widest font-black mt-1">Section Académique</p>
+                </div>
+              </div>
+              <div [class]="'px-4 py-2 rounded-2xl flex flex-col items-center ' + 
+                (getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'high' ? 'bg-emerald-50 text-emerald-600' : 
+                 getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'mid' ? 'bg-amber-50 text-amber-600' : 'bg-red-50 text-red-600')">
+                  <span class="font-manrope font-black text-[18px] leading-none">{{ dataService.getStudentAverageForPeriod(student.id, selectedPeriodId())?.toFixed(2) || '--' }}</span>
+                  <span class="text-[8px] uppercase font-bold tracking-tighter opacity-60 mt-0.5">Moyenne</span>
+              </div>
+            </div>
+
+            <!-- Card Body (Evaluations List) -->
+            <div class="px-6 py-4 space-y-3 bg-surface-lowest/50">
+              @for (eval of evaluations(); track eval.id) {
+                <div class="flex items-center justify-between p-3.5 rounded-2xl bg-white border border-surface-low shadow-sm">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                       <span class="font-manrope font-bold text-[13px] text-on-surface truncate">{{ eval.name }}</span>
+                       <span class="px-1.5 py-0.5 bg-on-surface/5 rounded text-[8px] font-manrope font-extrabold text-on-surface-variant/40">C{{ eval.coefficient }}</span>
+                    </div>
+                    <p class="text-[10px] text-on-surface-variant/40 font-bold mt-0.5 italic">Sur {{ eval.maxGrade }} pts</p>
+                  </div>
+                  <div class="w-20">
+                    <input type="number" 
+                      [value]="getGrade(student.id, eval.id)"
+                      (input)="validateInput(student.id, eval.id, eval.maxGrade, $event)"
+                      (blur)="updateGrade(student.id, eval.id, $event)"
+                      [class.text-red-500]="cellErrors()[student.id + '_' + eval.id]"
+                      class="w-full bg-surface-low text-center font-manrope font-black text-[16px] py-2 rounded-xl border-none outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                      placeholder="-">
+                  </div>
+                </div>
+              } @empty {
+                <div class="py-10 text-center">
+                  <p class="text-[11px] text-on-surface-variant/20 uppercase font-black tracking-widest">Aucune évaluation</p>
+                </div>
+              }
+            </div>
+
+            <!-- Card Footer (Progress Mini-bar) -->
+            <div class="h-1.5 w-full bg-surface-low flex">
+              <div class="h-full soft-transition" [style.width.%]="(dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0) * 5"
+                [class.bg-emerald-500]="getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'high'"
+                [class.bg-amber-500]="getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'mid'"
+                [class.bg-red-500]="getPerformanceLevel((dataService.getStudentAverageForPeriod(student.id, selectedPeriodId()) || 0)) === 'low'">
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="glass-card p-12 text-center">
+            <p class="label-sm text-on-surface-variant/20 uppercase font-black">Aucun résultat trouvé</p>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</div>
