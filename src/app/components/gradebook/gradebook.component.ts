@@ -29,12 +29,12 @@ export class GradebookComponent {
   });
 
   selectedPeriodId = signal<string>('');
-  
+
   selectedPeriod = computed(() => this.periods().find(p => p.id === this.selectedPeriodId()));
 
   evaluations = computed(() => {
-      const pid = this.selectedPeriodId();
-      return this.dataService.evaluations().filter(e => e.classId === this.classId && e.periodId === pid);
+    const pid = this.selectedPeriodId();
+    return this.dataService.evaluations().filter(e => e.classId === this.classId && e.periodId === pid);
   });
 
   students = computed(() => this.dataService.students().filter(s => s.classId === this.classId));
@@ -51,7 +51,7 @@ export class GradebookComponent {
   validateInput(studentId: string, evaluationId: string, maxGrade: number, event: any) {
     const val = parseFloat(event.target.value);
     const key = `${studentId}_${evaluationId}`;
-    
+
     if (!isNaN(val) && (val < 0 || val > maxGrade)) {
       this.cellErrors.update(prev => ({ ...prev, [key]: `La note doit être entre 0 et ${maxGrade}` }));
     } else {
@@ -66,32 +66,32 @@ export class GradebookComponent {
   isLoading = signal(true);
 
   constructor() {
-      // Auto select first period
-      const stop = setInterval(() => {
-          const ps = this.periods();
-          if (ps.length > 0) {
-              this.selectedPeriodId.set(ps[0].id);
-              clearInterval(stop);
-          }
-      }, 100);
+    // Auto select first period
+    const stop = setInterval(() => {
+      const ps = this.periods();
+      if (ps.length > 0) {
+        this.selectedPeriodId.set(ps[0].id);
+        clearInterval(stop);
+      }
+    }, 100);
 
-      // Simulate data fetch
-      setTimeout(() => {
-        this.isLoading.set(false);
-      }, 1500);
+    // Simulate data fetch
+    setTimeout(() => {
+      this.isLoading.set(false);
+    }, 1500);
   }
 
   addEvaluation() {
     if (!this.newEvalName.trim() || !this.selectedPeriodId()) return;
-    
+
     this.dataService.addEvaluation(
-        this.classId,
-        this.selectedPeriodId(),
-        this.newEvalName,
-        this.newEvalType,
-        this.newEvalMaxGrade,
-        new Date(),
-        this.newEvalCoef
+      this.classId,
+      this.selectedPeriodId(),
+      this.newEvalName,
+      this.newEvalType,
+      this.newEvalMaxGrade,
+      new Date(),
+      this.newEvalCoef
     );
     this.showEvalForm.set(false);
     this.newEvalName = '';
@@ -107,16 +107,16 @@ export class GradebookComponent {
     if (!evaluation) return;
 
     let val = parseFloat(event.target.value);
-    
+
     if (isNaN(val)) return;
 
     // Constraint validation
     if (val > evaluation.maxGrade) {
-        val = evaluation.maxGrade;
-        event.target.value = val; // Reflect correction in UI
+      val = evaluation.maxGrade;
+      event.target.value = val; // Reflect correction in UI
     } else if (val < 0) {
-        val = 0;
-        event.target.value = val; // Reflect correction in UI
+      val = 0;
+      event.target.value = val; // Reflect correction in UI
     }
 
     this.dataService.setGrade(evaluationId, studentId, val);
@@ -124,9 +124,9 @@ export class GradebookComponent {
     // Clear error
     const key = `${studentId}_${evaluationId}`;
     this.cellErrors.update(prev => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
+      const next = { ...prev };
+      delete next[key];
+      return next;
     });
   }
 

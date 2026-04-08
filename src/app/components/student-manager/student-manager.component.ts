@@ -21,7 +21,7 @@ export class StudentManagerComponent implements OnInit {
   private toast = inject(ToastService);
 
   classId = Number(this.route.snapshot.paramMap.get('id') || '0');
-  
+
   classroom = signal<ClassroomResponseDto | null>(null);
   students = signal<StudentResponse[]>([]);
 
@@ -50,7 +50,7 @@ export class StudentManagerComponent implements OnInit {
 
   loadData() {
     this.isLoading.set(true);
-    
+
     // First fetch classroom to get its details
     this.classroomService.getById(this.classId).subscribe({
       next: (cls) => {
@@ -79,8 +79,8 @@ export class StudentManagerComponent implements OnInit {
 
   toggleForm(student?: StudentResponse) {
     if (this.showForm() && (this.firstName.trim() !== '' || this.lastName.trim() !== '') && !student) {
-        this.showDiscardConfirm.set(true);
-        return;
+      this.showDiscardConfirm.set(true);
+      return;
     }
 
     if (student) {
@@ -204,18 +204,18 @@ export class StudentManagerComponent implements OnInit {
   private parseCSV(text: string) {
     const lines = text.split(/\r?\n/);
     let successfullyParsed = 0;
-    
+
     // We can't import asynchronously with a simple loop reliably without combining observables
     // Here we will do sequential or parallel requests using RxJS, but for simplicity, we mock alert for now or implement parallel creation
     // Best practice for bulk import is a backend bulk endpoint. Let's just create sequentially logic for demo.
-    
+
     if (lines.length > 0) {
       this.toast.info('Début de l\'importation en masse...');
     }
 
     lines.forEach(line => {
       if (!line.trim()) return;
-      
+
       const parts = line.includes(';') ? line.split(';') : line.split(',');
       if (parts.length >= 2) {
         const firstName = parts[0].trim();
@@ -232,8 +232,8 @@ export class StudentManagerComponent implements OnInit {
           this.studentService.create(payload).subscribe({
             next: () => successfullyParsed++,
             complete: () => {
-               // When last one finishes maybe fetch students.
-               this.fetchStudents();
+              // When last one finishes maybe fetch students.
+              this.fetchStudents();
             }
           });
         }
