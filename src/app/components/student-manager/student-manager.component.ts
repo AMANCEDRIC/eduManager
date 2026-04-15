@@ -92,6 +92,7 @@ export class StudentManagerComponent implements OnInit {
       this.parentName = student.parentName || '';
       this.parentEmail = student.parentEmail || '';
       this.parentPhone = student.parentPhone || '';
+      this.gender = student.gender || 'M';
     } else {
       this.editingId.set(null);
       this.firstName = '';
@@ -122,6 +123,7 @@ export class StudentManagerComponent implements OnInit {
       parentName: this.parentName || undefined,
       parentEmail: this.parentEmail || undefined,
       parentPhone: this.parentPhone || undefined,
+      gender: this.gender,
       classroomId: this.classId
     };
 
@@ -227,6 +229,7 @@ export class StudentManagerComponent implements OnInit {
             firstName,
             lastName,
             email,
+            gender: 'M', // Par défaut pour l'import CSV rapide
             classroomId: this.classId
           };
           this.studentService.create(payload).subscribe({

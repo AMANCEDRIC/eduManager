@@ -163,10 +163,22 @@
               </div>
             </td>
             <td class="px-6 py-4 text-center">
+              @if (student.gender === 'M') {
+              <span
+                class="label-sm px-2 py-0.5 rounded-md font-extrabold text-[9px] ring-1 ring-inset bg-blue-50 text-blue-600 ring-blue-500/10">
+                M
+              </span>
+              } @else if (student.gender === 'F') {
+              <span
+                class="label-sm px-2 py-0.5 rounded-md font-extrabold text-[9px] ring-1 ring-inset bg-pink-50 text-pink-600 ring-pink-500/10">
+                F
+              </span>
+              } @else {
               <span
                 class="label-sm px-2 py-0.5 rounded-md font-extrabold text-[9px] ring-1 ring-inset bg-surface-container-low text-on-surface-variant/50 ring-on-surface-variant/10">
                 N/A
               </span>
+              }
             </td>
             <td class="px-6 py-4 text-center">
               <div class="inline-flex flex-col items-center">

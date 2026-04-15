@@ -11,6 +11,7 @@ export interface StudentCreate {
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
+  gender: 'M' | 'F';
   classroomId: number;
 }
 
