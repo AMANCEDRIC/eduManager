@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
@@ -11,7 +11,7 @@ import { User, UserRole } from '../../../models/models';
   imports: [CommonModule, FormsModule],
   templateUrl: './user-manager.component.html'
 })
-export class UserManagerComponent {
+export class UserManagerComponent implements OnInit {
   auth = inject(AuthService);
   toast = inject(ToastService);
   
@@ -26,11 +26,19 @@ export class UserManagerComponent {
 
   users = this.auth.users;
 
-  constructor() {
-    // Simulate data fetch
-    setTimeout(() => {
-      this.isLoading.set(false);
-    }, 1000);
+  ngOnInit() {
+    this.loadUsers();
+  }
+
+  loadUsers() {
+    this.isLoading.set(true);
+    this.auth.fetchUsers().subscribe({
+      next: () => this.isLoading.set(false),
+      error: () => {
+        this.toast.error('Impossible de charger les utilisateurs');
+        this.isLoading.set(false);
+      }
+    });
   }
 
   toggleForm() {
@@ -50,21 +58,25 @@ export class UserManagerComponent {
   saveUser() {
     if (this.email && this.firstName && this.lastName) {
       this.auth.createUser(this.email, this.firstName, this.lastName, this.role);
-      this.toast.success('Utilisateur créé avec succès !');
+      this.toast.success('Requête de création envoyée !');
       this.toggleForm();
     } else {
       this.toast.warning('Veuillez remplir tous les champs.');
     }
   }
 
-  toggleBlock(userId: string) {
-    this.auth.toggleBlockUser(userId);
+  toggleBlock(id: string) {
+    // We prefer accountId if available (for admin ops)
+    const user = this.users().find(u => u.id === id);
+    const targetId = user?.accountId?.toString() || id;
+    this.auth.toggleBlockUser(targetId);
   }
 
-  deleteUser(userId: string) {
-    if (confirm('Supprimer cet utilisateur définitivement ?')) {
-      this.auth.deleteUser(userId);
-      this.toast.success('Utilisateur supprimé.');
+  deleteUser(id: string) {
+    if (confirm('Supprimer cet utilisateur (Soft Delete) ?')) {
+      const user = this.users().find(u => u.id === id);
+      const targetId = user?.accountId?.toString() || id;
+      this.auth.deleteUser(targetId);
     }
   }
 }

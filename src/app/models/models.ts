@@ -3,6 +3,7 @@ export type PeriodType = 'trimester' | 'semester';
 
 export interface User {
   id: string;
+  accountId?: number; // Added for administrative operations
   email: string;
   firstName: string;
   lastName: string;

@@ -98,7 +98,7 @@ export class RegisterComponent {
       this.isLoading.set(true);
       
       this.auth.register(this.email, this.firstName, this.lastName, this.password).subscribe({
-        next: (response) => {
+        next: (response: any) => {
           if (response.status === 201 || response.status === 200) {
             this.toast.success('Compte créé avec succès !');
             // Auto-login after register by executing login
@@ -117,7 +117,7 @@ export class RegisterComponent {
             this.isLoading.set(false);
           }
         },
-        error: (err) => {
+        error: (err: any) => {
           console.error(err);
           this.toast.error('Erreur de connexion au serveur.');
           this.isLoading.set(false);

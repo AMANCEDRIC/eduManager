@@ -32,11 +32,9 @@ export class AuthService {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       
-      // Role mapping: TEACHER -> teacher, ADMIN -> admin, PARENT -> parent
       const rawRole = (payload.role || '').toLowerCase();
       const role: UserRole = ['admin', 'teacher', 'parent'].includes(rawRole) ? rawRole as UserRole : 'teacher';
 
-      // Name splitting (France Liliane Naounou -> France / Liliane Naounou)
       const fullName = payload.name || 'Utilisateur';
       const parts = fullName.split(' ');
       const firstName = parts[0];
@@ -59,7 +57,6 @@ export class AuthService {
   }
 
   login(email: string, password?: string): Observable<ApiResponse<any>> {
-    // Note: data might be a string or an object { token: string }
     return this.http.post<ApiResponse<any>>(`${this.apiUrl}/auth/login`, { email, password })
       .pipe(
         tap(response => {
@@ -89,17 +86,45 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  // --- Temp Mocks (will be replaced by real API later) ---
-  private _users = signal<User[]>(this.loadUsers());
+  // --- Admin & User Management ---
+  private _users = signal<User[]>([]);
   users = computed(() => this._users());
 
-  private loadUsers(): User[] {
-    const data = localStorage.getItem('users');
-    return data ? JSON.parse(data) : [];
+  fetchUsers(): Observable<ApiResponse<User[]>> {
+    return this.http.get<ApiResponse<User[]>>(`${this.apiUrl}/admin/users`).pipe(
+      tap(response => {
+        if (response.status === 200 && response.data) {
+          this._users.set(response.data);
+        }
+      })
+    );
   }
 
-  private saveUsers() {
-    localStorage.setItem('users', JSON.stringify(this._users()));
+  createUser(email: string, firstName: string, lastName: string, role: UserRole) {
+    this.register(email, firstName, lastName, '12345678', role.toUpperCase()).subscribe({
+      next: () => this.fetchUsers().subscribe(),
+      error: () => this.toast.error('Erreur lors de la création')
+    });
+  }
+
+  toggleBlockUser(accountId: string) {
+    this.http.put<ApiResponse<any>>(`${this.apiUrl}/admin/users/${accountId}/toggle-block`, {}).subscribe({
+      next: () => {
+        this.fetchUsers().subscribe();
+        this.toast.success('Statut mis à jour');
+      },
+      error: () => this.toast.error('Erreur lors du blocage/déblocage')
+    });
+  }
+
+  deleteUser(accountId: string) {
+    this.http.delete<ApiResponse<any>>(`${this.apiUrl}/admin/users/${accountId}`).subscribe({
+      next: () => {
+        this.fetchUsers().subscribe();
+        this.toast.success('Utilisateur supprimé');
+      },
+      error: () => this.toast.error('Erreur lors de la suppression')
+    });
   }
 
   register(email: string, firstName: string, lastName: string, password?: string, role: string = 'TEACHER'): Observable<ApiResponse<any>> {
@@ -107,46 +132,8 @@ export class AuthService {
       email,
       firstName,
       lastName,
-      password: password || '12345678', // Provide default if needed, though UI should pass it
+      password: password || '12345678',
       role
     });
-  }
-
-  getAllUsers(): User[] {
-    return this._users();
-  }
-
-  updateUser(user: User) {
-    this._users.update(users => users.map(u => u.id === user.id ? user : u));
-    this.saveUsers();
-  }
-
-  toggleBlockUser(userId: string) {
-    this._users.update(users => users.map(u => {
-      if (u.id === userId) {
-        return { ...u, isBlocked: !u.isBlocked };
-      }
-      return u;
-    }));
-    this.saveUsers();
-  }
-
-  deleteUser(userId: string) {
-    this._users.update(users => users.filter(u => u.id !== userId));
-    this.saveUsers();
-  }
-
-  createUser(email: string, firstName: string, lastName: string, role: UserRole) {
-    const newUser: User = {
-      id: Date.now().toString(),
-      email,
-      firstName,
-      lastName,
-      role,
-      isBlocked: false,
-      createdAt: new Date().toISOString()
-    };
-    this._users.update(users => [...users, newUser]);
-    this.saveUsers();
   }
 }

@@ -18,6 +18,7 @@ export interface StudentResponse {
   id: number;
   firstName: string;
   lastName: string;
+  gender: 'M' | 'F' | null;
   dateOfBirth: string | null;
   email: string | null;
   parentName: string | null;
@@ -33,6 +34,11 @@ export interface StudentResponse {
 })
 export class StudentService {
   private api = inject(ApiService);
+
+  getAll(): Observable<StudentResponse[]> {
+    return this.api.get<StudentResponse[]>('/students')
+      .pipe(map(res => res.data || []));
+  }
 
   getByClassroom(classroomId: number | string): Observable<StudentResponse[]> {
     return this.api.get<StudentResponse[]>(`/students/classroom/${classroomId}`)
