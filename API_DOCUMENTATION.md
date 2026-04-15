@@ -123,13 +123,14 @@ Authentifier et recevoir un JWT.
 
 > ⚠️ Le `data` est directement le **token JWT** (string). Stocker dans `localStorage` et envoyer dans le header `Authorization: Bearer <token>`.
 
-**JWT Claims :**
 | Claim | Description |
 |---|---|
 | `id` | ID de l'utilisateur |
 | `email` | Email |
 | `name` | Prénom + Nom |
-| `role` | Code du profil (ex: `TEACHER`) |
+| `groups` | Liste des rôles (ex: `["TEACHER"]`) |
+
+> 💡 Quarkus utilise le claim standard `groups` pour valider les rôles dans `@RolesAllowed`.
 
 ---
 
@@ -210,6 +211,8 @@ export interface Establishment {
   country: string;
   periodType?: string;       // "TRIMESTRE" | "SEMESTRE"
   academicYear?: string;     // "2024-2025"
+  ownerId?: number;          // ID du compte créateur
+  ownerName?: string;        // Nom complet du créateur
   createdAt?: string;
   updatedAt?: string;
 }
@@ -219,11 +222,11 @@ export interface Establishment {
 
 | Méthode | URL | Description | Auth |
 |---|---|---|---|
-| `GET` | `/api/establishments` | Lister tous | Non |
-| `GET` | `/api/establishments/{id}` | Détail par ID | Non |
-| `POST` | `/api/establishments` | Créer | Non |
-| `PUT` | `/api/establishments/{id}` | Modifier | Non |
-| `DELETE` | `/api/establishments/{id}` | Supprimer | Non |
+| `GET` | `/api/establishments` | Lister tous | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/establishments/{id}` | Détail par ID | 🔒 `TEACHER`, `ADMIN` |
+| `POST` | `/api/establishments` | Créer | 🔒 `TEACHER`, `ADMIN` |
+| `PUT` | `/api/establishments/{id}` | Modifier | 🔒 `TEACHER`, `ADMIN` |
+| `DELETE` | `/api/establishments/{id}` | Supprimer | 🔒 `TEACHER`, `ADMIN` |
 
 #### `POST /api/establishments`
 
@@ -264,9 +267,7 @@ export interface Establishment {
 
 ## 3. 📅 Périodes (`/api/periods`)
 
-> ⚠️ **Note** : Le PeriodController n'existe pas encore côté backend. Il faudra le créer pour exposer ces endpoints. Les modèles et la base de données sont prêts.
-
-### Interface Angular (à préparer)
+### Interface Angular
 
 ```typescript
 // models/period.model.ts
@@ -284,14 +285,17 @@ export interface Period {
 }
 ```
 
-### Endpoints à venir
+### Endpoints
 
-| Méthode | URL | Description |
-|---|---|---|
-| `GET` | `/api/periods/establishment/{establishmentId}` | Périodes d'un établissement |
-| `POST` | `/api/periods` | Créer une période |
-| `PUT` | `/api/periods/{id}` | Modifier |
-| `DELETE` | `/api/periods/{id}` | Supprimer |
+| Méthode | URL | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/periods/establishment/{establishmentId}` | Périodes d'un établissement | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/periods/{id}` | Détail d'une période | 🔒 `TEACHER`, `ADMIN` |
+| `POST` | `/api/periods/establishment/{establishmentId}` | Créer une période | 🔒 `TEACHER`, `ADMIN` |
+| `PUT` | `/api/periods/{id}` | Modifier | 🔒 `TEACHER`, `ADMIN` |
+| `DELETE` | `/api/periods/{id}` | Supprimer | 🔒 `TEACHER`, `ADMIN` |
+
+> 💡 **Création Automatique** : Lors de la création d'un établissement, les périodes par défaut (T1-T3 ou S1-S2) sont créées automatiquement selon le `periodType`.
 
 ---
 
@@ -324,14 +328,14 @@ export interface ClassroomResponse {
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---|---|---|
-| `GET` | `/api/classrooms` | Lister toutes les classes |
-| `GET` | `/api/classrooms/{id}` | Détail d'une classe |
-| `GET` | `/api/classrooms/establishment/{establishmentId}` | Classes d'un établissement |
-| `POST` | `/api/classrooms` | Créer une classe |
-| `PUT` | `/api/classrooms/{id}` | Modifier |
-| `DELETE` | `/api/classrooms/{id}` | Supprimer |
+| Méthode | URL | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/classrooms` | Lister toutes | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/classrooms/{id}` | Détail d'une classe | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/classrooms/establishment/{establishmentId}` | Classes d'un établissement | 🔒 `TEACHER`, `ADMIN` |
+| `POST` | `/api/classrooms` | Créer une classe | 🔒 `TEACHER`, `ADMIN` |
+| `PUT` | `/api/classrooms/{id}` | Modifier | 🔒 `TEACHER`, `ADMIN` |
+| `DELETE` | `/api/classrooms/{id}` | Supprimer | 🔒 `TEACHER`, `ADMIN` |
 
 #### `POST /api/classrooms`
 
@@ -401,14 +405,14 @@ export interface StudentResponse {
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---|---|---|
-| `GET` | `/api/students` | Lister tous les élèves |
-| `GET` | `/api/students/{id}` | Détail d'un élève |
-| `GET` | `/api/students/classroom/{classroomId}` | Élèves d'une classe |
-| `POST` | `/api/students` | Créer un élève |
-| `PUT` | `/api/students/{id}` | Modifier |
-| `DELETE` | `/api/students/{id}` | Supprimer |
+| Méthode | URL | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/students` | Lister tous les élèves | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/students/{id}` | Détail d'un élève | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/students/classroom/{classroomId}` | Élèves d'une classe | 🔒 `TEACHER`, `ADMIN` |
+| `POST` | `/api/students` | Créer un élève | 🔒 `TEACHER`, `ADMIN` |
+| `PUT` | `/api/students/{id}` | Modifier | 🔒 `TEACHER`, `ADMIN` |
+| `DELETE` | `/api/students/{id}` | Supprimer | 🔒 `TEACHER`, `ADMIN` |
 
 #### `POST /api/students`
 
@@ -479,11 +483,12 @@ export interface EvaluationResponse {
 
 ### Endpoints
 
-| Méthode | URL | Description |
-|---|---|---|
-| `GET` | `/api/evaluations/{id}` | Détail d'une évaluation |
-| `GET` | `/api/evaluations/classroom/{classroomId}` | Évaluations d'une classe |
-| `POST` | `/api/evaluations` | Créer une évaluation |
+| Méthode | URL | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/evaluations/{id}` | Détail d'une évaluation | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/evaluations/classroom/{classroomId}` | Évaluations d'une classe | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/evaluations/classroom/{classroomId}/period/{periodId}` | Évaluations d'une classe (période) | 🔒 `TEACHER`, `ADMIN` |
+| `POST` | `/api/evaluations` | Créer une évaluation | 🔒 `TEACHER`, `ADMIN` |
 
 #### `POST /api/evaluations`
 
@@ -563,15 +568,15 @@ export interface BulkGradeItem {
 
 ### Endpoints — CRUD notes individuelles
 
-| Méthode | URL | Description |
-|---|---|---|
-| `GET` | `/api/grades` | Toutes les notes |
-| `GET` | `/api/grades/{id}` | Détail d'une note |
-| `GET` | `/api/grades/student/{studentId}` | Notes d'un élève |
-| `GET` | `/api/grades/evaluation/{evaluationId}` | Notes d'une évaluation |
-| `POST` | `/api/grades` | Créer une note |
-| `PUT` | `/api/grades/{id}` | Modifier une note |
-| `DELETE` | `/api/grades/{id}` | Supprimer une note |
+| Méthode | URL | Description | Auth |
+|---|---|---|---|
+| `GET` | `/api/grades` | Toutes les notes | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/grades/{id}` | Détail d'une note | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/grades/student/{studentId}` | Notes d'un élève | 🔒 `TEACHER`, `ADMIN` |
+| `GET` | `/api/grades/evaluation/{evaluationId}` | Notes d'une évaluation | 🔒 `TEACHER`, `ADMIN` |
+| `POST` | `/api/grades` | Créer une note | 🔒 `TEACHER`, `ADMIN` |
+| `PUT` | `/api/grades/{id}` | Modifier une note | 🔒 `TEACHER`, `ADMIN` |
+| `DELETE` | `/api/grades/{id}` | Supprimer une note | 🔒 `TEACHER`, `ADMIN` |
 
 #### `POST /api/grades`
 
@@ -667,24 +672,42 @@ export interface AverageResponse {
 ### Endpoint
 
 #### `GET /api/grades/average/student/{studentId}/classroom/{classroomId}`
-Calcul de la moyenne pondérée d'un élève dans une classe.
+Calcul de la moyenne pondérée annuelle d'un élève dans une classe.
+
+#### `GET /api/grades/average/student/{studentId}/classroom/{classroomId}/period/{periodId}`
+Calcul de la moyenne pondérée d'un élève pour une période spécifique.
+
+#### `GET /api/grades/average/classroom/{classroomId}`
+Calcul de la moyenne générale annuelle d'une classe.
+
+#### `GET /api/grades/average/classroom/{classroomId}/period/{periodId}`
+Calcul de la moyenne générale d'une classe pour une période spécifique.
+
+#### `GET /api/grades/average/classroom/{classroomId}/dashboard`
+Récupère la liste de tous les élèves de la classe avec leurs moyennes annuelle et périodique.
 
 **Query Params :**
 | Param | Default | Description |
 |---|---|---|
-| `rule` | `C` | Règle de calcul (réservé pour évolution) |
+| `periodId` | - | ID de la période pour la moyenne périodique |
+| `rule` | `C` | Règle de calcul |
 
 **Response (200) :**
 ```json
 {
   "status": 200,
-  "message": "Moyenne calculée",
-  "data": {
-    "rule": "C",
-    "weightedAverage": 14.25,
-    "totalWeighted": 42.75,
-    "totalCoefficient": 3
-  }
+  "message": "Dashboard de classe",
+  "data": [
+    {
+      "studentId": 1,
+      "firstName": "Jean",
+      "lastName": "Dupont",
+      "annualAverage": 14.50,
+      "periodAverage": 15.20,
+      "totalGrades": 12
+    },
+    ...
+  ]
 }
 ```
 
@@ -829,5 +852,25 @@ Données métier (avec JWT)
 2. **Port** : Le backend tourne sur `8081` (pas 8080).
 3. **Dates** : Envoyer au format `YYYY-MM-DD` (ex: `2024-10-15`).
 4. **Timestamps** : Retournés au format ISO 8601 (ex: `2024-10-15T10:30:00Z`).
-5. **PeriodController** : Pas encore créé côté backend. À implémenter quand le front en aura besoin.
+5. **PeriodController** : Opérationnel. Gère les trimestres/semestres.
 6. **Statuts de notes** : `PRESENT`, `ABSENT_JUSTIFIED`, `ABSENT_UNJUSTIFIED`, `NOT_SUBMITTED`.
+
+---
+
+## 🔒 Sécurité et Multi-tenancy
+
+Le backend utilise une isolation stricte des données pour garantir que chaque enseignant/administrateur n'accède qu'aux données de son propre établissement.
+
+1. **Isolation par JWT** : Chaque requête doit inclure le header `Authorization: Bearer <token>`. Le backend extrait l'utilisateur et son rôle du token.
+2. **Vérification de Propriété** : Avant toute opération (Lecture, Création, Modification), les services vérifient que l'entité parente (ex: la classe ou l'école) appartient bien à l'utilisateur connecté ou que celui-ci a les droits appropriés sur l'établissement.
+3. **Erreurs standardisées** :
+   - `401 Unauthorized` : Token manquant ou invalide.
+   - `403 Forbidden` : Tentative d'accès à une ressource appartenant à un autre établissement ou rôle insuffisant.
+   - `404 Not Found` : Ressource inexistante.
+   - `200/201` : Succès.
+
+---
+
+## 📸 Médias et Profils (Bientôt disponible)
+
+Des endpoints d'upload pour les photos de profil (User et Student) sont en cours d'ajout. Le champ `photoUrl` sera présent dans les DTOs correspondants.
