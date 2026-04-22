@@ -37,8 +37,15 @@ import { ToastService } from '../../services/toast.service';
             
             <div class="flex flex-col gap-1.5">
               <label class="label-sm text-[10px] tracking-widest uppercase font-extrabold text-on-surface-variant/30">Mot de passe</label>
-              <input type="password" [(ngModel)]="password" placeholder="••••••••" 
-                class="input-premium py-3 font-inter text-[14px]">
+              <div class="relative">
+                <input [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" placeholder="••••••••" 
+                  class="input-premium py-3 font-inter text-[14px] w-full pr-10">
+                <button (click)="showPassword.set(!showPassword())" 
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant/40 hover:text-on-surface soft-transition">
+                  <svg *ngIf="!showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg *ngIf="showPassword()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                </button>
+              </div>
             </div>
 
             <div class="pt-2">
@@ -76,6 +83,7 @@ export class LoginComponent {
   email = '';
   password = '';
   isLoading = signal(false);
+  showPassword = signal(false);
 
   constructor(
     private authService: AuthService, 
@@ -95,7 +103,12 @@ export class LoginComponent {
             if (response.status === 200 && response.data) {
               const user = this.authService.currentUser();
               this.toast.success(`Bienvenue, ${user?.firstName || 'Utilisateur'} !`);
-              this.router.navigate(['/dashboard']);
+              
+              if (this.authService.isAdmin()) {
+                this.router.navigate(['/admin/dashboard']);
+              } else {
+                this.router.navigate(['/dashboard']);
+              }
             } else {
               this.toast.error(response.message || 'Identifiants incorrects.');
             }

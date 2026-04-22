@@ -20,6 +20,8 @@ export class UserManagerComponent implements OnInit {
   
   // Form fields
   email = '';
+  password = '';
+  showPassword = signal(false);
   firstName = '';
   lastName = '';
   role: UserRole = 'teacher';
@@ -50,14 +52,16 @@ export class UserManagerComponent implements OnInit {
 
   resetForm() {
     this.email = '';
+    this.password = '';
+    this.showPassword.set(false);
     this.firstName = '';
     this.lastName = '';
     this.role = 'teacher';
   }
 
   saveUser() {
-    if (this.email && this.firstName && this.lastName) {
-      this.auth.createUser(this.email, this.firstName, this.lastName, this.role);
+    if (this.email && this.password && this.firstName && this.lastName) {
+      this.auth.createUser(this.email, this.firstName, this.lastName, this.role, this.password);
       this.toast.success('Requête de création envoyée !');
       this.toggleForm();
     } else {

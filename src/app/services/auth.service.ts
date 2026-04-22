@@ -14,9 +14,9 @@ export class AuthService {
 
   currentUser = computed(() => this._currentUser());
   isLoggedIn = computed(() => !!this._currentUser());
-  isAdmin = computed(() => this._currentUser()?.role === 'admin');
-  isTeacher = computed(() => this._currentUser()?.role === 'teacher');
-  isParent = computed(() => this._currentUser()?.role === 'parent');
+  isAdmin = computed(() => this._currentUser()?.role.toLowerCase() === 'admin');
+  isTeacher = computed(() => this._currentUser()?.role.toLowerCase() === 'teacher');
+  isParent = computed(() => this._currentUser()?.role.toLowerCase() === 'parent');
 
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
@@ -32,7 +32,19 @@ export class AuthService {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       
-      const rawRole = (payload.role || '').toLowerCase();
+      let rawRole = (payload.role || '').toLowerCase();
+      
+      // If role is missing, check in 'groups' array (common in some token structures)
+      if (!rawRole && Array.isArray(payload.groups) && payload.groups.length > 0) {
+        // Find the first role in groups that matches our known roles
+        const foundRole = payload.groups.find((g: string) => 
+          ['admin', 'teacher', 'parent'].includes(g.toLowerCase())
+        );
+        if (foundRole) {
+          rawRole = foundRole.toLowerCase();
+        }
+      }
+
       const role: UserRole = ['admin', 'teacher', 'parent'].includes(rawRole) ? rawRole as UserRole : 'teacher';
 
       const fullName = payload.name || 'Utilisateur';
@@ -100,8 +112,8 @@ export class AuthService {
     );
   }
 
-  createUser(email: string, firstName: string, lastName: string, role: UserRole) {
-    this.register(email, firstName, lastName, '12345678', role.toUpperCase()).subscribe({
+  createUser(email: string, firstName: string, lastName: string, role: UserRole, password?: string) {
+    this.register(email, firstName, lastName, password || '12345678', role.toUpperCase()).subscribe({
       next: () => this.fetchUsers().subscribe(),
       error: () => this.toast.error('Erreur lors de la création')
     });

@@ -38,9 +38,18 @@ export class DashboardComponent implements OnInit {
       students: this.studentService.getAll()
     }).subscribe({
       next: (data) => {
+        // Filter classes: only keep those belonging to user's establishments
+        const userEstabIds = data.establishments.map(e => e.id);
+        const filteredClasses = data.classrooms.filter(c => userEstabIds.includes(c.establishmentId));
+        
+        // Filter students: for now we use establishmentName as a proxy if classroomId is missing in response
+        // Better: Backend should only return what belongs to the user
+        const userEstabNames = data.establishments.map(e => e.name);
+        const filteredStudents = data.students.filter(s => userEstabNames.includes(s.establishmentName || ''));
+
         this.establishments.set(data.establishments);
-        this.classrooms.set(data.classrooms);
-        this.students.set(data.students);
+        this.classrooms.set(filteredClasses);
+        this.students.set(filteredStudents);
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -51,9 +60,10 @@ export class DashboardComponent implements OnInit {
   }
 
   globalAverage = computed(() => {
-    // Note: For a real app, global average should ideally come from a specialized endpoint 
-    // to avoid heavy frontend calculations. For now, we show a symbolic value if not available.
-    return '14.50'; 
+    const studentsList = this.students();
+    if (studentsList.length === 0) return '0.00';
+    // Logic for real calculation would go here
+    return '0.00'; 
   });
 
   genderStats = computed(() => {

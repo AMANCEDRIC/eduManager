@@ -2,7 +2,7 @@
   <!-- Header Section -->
   <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div>
-      <h1 class="display-md text-on-surface">Bonjour, {{ auth.currentUser()?.firstName || 'Professeur' }}</h1>
+      <h1 class="display-md text-on-surface">Bonjour, {{ auth.currentUser()?.firstName || 'Utilisateur' }}</h1>
       <p class="body-md text-on-surface-variant/60 mt-1">Résumé de votre activité académique.</p>
     </div>
     <div class="flex gap-2">
@@ -170,7 +170,7 @@
           <div class="absolute top-0 left-0 w-full h-full bg-black/10 opacity-0 group-hover:opacity-100 soft-transition"></div>
           <div class="relative z-10 text-center lg:text-left">
             <h3 class="headline-sm text-white mb-2">Besoin d'aide ?</h3>
-            <p class="body-sm text-white/70 mb-6 leading-snug">Consultez le guide du curateur.</p>
+            <p class="body-sm text-white/70 mb-6 leading-snug">Consultez le guide utilisateur.</p>
             <button class="w-full py-3 bg-white text-primary rounded-md font-manrope font-extrabold text-[11px] uppercase tracking-wider hover:bg-surface-lowest soft-transition active:scale-95 shadow-xl shadow-black/10">
               Centre d'aide
             </button>

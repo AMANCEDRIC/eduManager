@@ -120,7 +120,7 @@
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.3-4.3" />
           </svg>
-          <input type="text" placeholder="Recherche curateur..."
+          <input type="text" placeholder="Recherche..."
             class="bg-transparent border-0 outline-none text-[12px] font-inter font-medium text-on-surface w-full placeholder:text-on-surface-variant/20">
         </div>
 
@@ -164,7 +164,9 @@
         <div class="flex items-center gap-3 ml-1 px-1 py-1 rounded-full bg-surface-lowest shadow-sm ring-1 ring-surface-low">
           <div class="hidden sm:flex flex-col text-right pr-1">
             <span class="text-[12px] font-manrope font-extrabold text-on-surface leading-tight">{{ auth.currentUser()?.firstName || 'Utilisateur' }}</span>
-            <span class="text-[9px] text-primary/60 font-inter font-extrabold uppercase tracking-widest leading-none">Curateur</span>
+            <span class="text-[9px] text-primary/60 font-inter font-extrabold uppercase tracking-widest leading-none">
+              {{ auth.isAdmin() ? 'Administrateur' : (auth.isTeacher() ? 'Enseignant' : 'Utilisateur') }}
+            </span>
           </div>
           <div class="w-8 h-8 rounded-full btn-premium-primary text-white flex items-center justify-center font-manrope font-extrabold text-[11px] shadow-lg shadow-primary/10 cursor-pointer">
             {{ auth.currentUser()?.firstName?.[0]?.toUpperCase() || 'U' }}
